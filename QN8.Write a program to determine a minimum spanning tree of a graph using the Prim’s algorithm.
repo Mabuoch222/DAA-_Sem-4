@@ -1,0 +1,112 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+// Class to represent a graph
+class Graph {
+public:
+    int V;  // Number of vertices
+    vector<vector<int>> adjMatrix;  // Adjacency matrix to store graph edges
+
+    // Constructor to initialize the graph
+    Graph(int V) {
+        this->V = V;
+        adjMatrix.resize(V, vector<int>(V, INT_MAX));  // Initialize adjacency matrix with infinite values
+    }
+
+    // Function to add an edge to the graph
+    void addEdge(int u, int v, int weight) {
+        adjMatrix[u][v] = weight;
+        adjMatrix[v][u] = weight;  // Since it's an undirected graph
+    }
+
+    // Function to run Prim's algorithm to find the Minimum Spanning Tree
+    void primMST() {
+        vector<int> parent(V, -1);  // Array to store the MST
+        vector<int> key(V, INT_MAX);  // Key values to pick minimum weight edge
+        vector<bool> inMST(V, false);  // Boolean array to mark vertices already included in MST
+
+        key[0] = 0;  // Start with the first node (arbitrary)
+        parent[0] = -1;  // Starting node doesn't have a parent
+
+        // Loop through all vertices in the graph
+        for (int count = 0; count < V - 1; count++) {
+            // Find the vertex with the minimum key value, not yet included in MST
+            int u = minKey(key, inMST);
+
+            // Include vertex u in the MST
+            inMST[u] = true;
+
+            // Update the key value and parent of the adjacent vertices of u
+            for (int v = 0; v < V; v++) {
+                // Update key[v] only if the edge u-v is smaller than the current key[v]
+                if (adjMatrix[u][v] != INT_MAX && !inMST[v] && adjMatrix[u][v] < key[v]) {
+                    key[v] = adjMatrix[u][v];
+                    parent[v] = u;
+                }
+            }
+        }
+
+        // Print the edges of the MST
+        printMST(parent);
+    }
+
+private:
+    // Function to find the vertex with the minimum key value
+    int minKey(const vector<int>& key, const vector<bool>& inMST) {
+        int min = INT_MAX, minIndex;
+
+        for (int v = 0; v < V; v++) {
+            if (!inMST[v] && key[v] < min) {
+                min = key[v];
+                minIndex = v;
+            }
+        }
+
+        return minIndex;
+    }
+
+    // Function to print the constructed MST
+    void printMST(const vector<int>& parent) {
+        cout << "Edge \tWeight" << endl;
+        for (int i = 1; i < V; i++) {
+            cout << parent[i] << " - " << i << " \t" << adjMatrix[i][parent[i]] << endl;
+        }
+    }
+};
+
+int main() {
+    // Create a graph with 5 vertices
+    Graph g(5);
+
+    // Add edges with weights to the graph
+    g.addEdge(0, 1, 2);
+    g.addEdge(0, 3, 6);
+    g.addEdge(1, 2, 3);
+    g.addEdge(1, 3, 8);
+    g.addEdge(1, 4, 5);
+    g.addEdge(2, 4, 7);
+    g.addEdge(3, 4, 9);
+
+    // Call Prim's algorithm to find the MST
+    cout << "Minimum Spanning Tree (MST) using Prim's Algorithm:" << endl;
+    g.primMST();
+
+    return 0;
+}
+
+
+OUTPUT:
+Minimum Spanning Tree (MST) using Prim's Algorithm:
+Edge    Weight
+0 - 1   2
+1 - 2   3
+0 - 3   6
+1 - 4   5
+
+
+Time Complexity:
+>>Time Complexity: O(V^2), where V is the number of vertices. This is because for each of the V vertices, we check all other vertices to find the minimum key value. If we use a priority queue, the time complexity can be improved to O((V + E) log V).
+
+>>Space Complexity: O(V^2), because the adjacency matrix takes O(V^2) space.
