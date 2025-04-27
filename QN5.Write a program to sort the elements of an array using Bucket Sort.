@@ -1,0 +1,65 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Function to perform Bucket Sort
+void bucketSort(vector<float>& arr) {
+    int n = arr.size();
+    
+    // 1. Create n empty buckets
+    vector<vector<float>> buckets(n);
+    
+    // 2. Put array elements in different buckets
+    for (int i = 0; i < n; i++) {
+        int index = n * arr[i]; // Index in bucket based on element value
+        buckets[index].push_back(arr[i]);
+    }
+
+    // 3. Sort each bucket
+    for (int i = 0; i < n; i++) {
+        sort(buckets[i].begin(), buckets[i].end());
+    }
+
+    // 4. Concatenate all sorted buckets into the original array
+    int index = 0;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < buckets[i].size(); j++) {
+            arr[index++] = buckets[i][j];
+        }
+    }
+}
+
+int main() {
+    vector<float> arr = {0.42, 0.32, 0.23, 0.52, 0.41, 0.64, 0.72, 0.17};
+    
+    cout << "Original array: ";
+    for (float num : arr) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    bucketSort(arr);
+
+    cout << "Sorted array: ";
+    for (float num : arr) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+
+
+OUTPUT:
+Original array: 0.42 0.32 0.23 0.52 0.41 0.64 0.72 0.17 
+Sorted array: 0.17 0.23 0.32 0.41 0.42 0.52 0.64 0.72
+
+
+
+Time Complexity:
+#Time Complexity: O(n + n log n), where n is the number of elements in the array. The time complexity is dominated by the sorting operation inside each bucket, which, in the worst case, could be O(n log n) for each bucket if the elements are evenly distributed.
+
+#Space Complexity: O(n), as additional space is required for the buckets and for storing the elements.
+
+
