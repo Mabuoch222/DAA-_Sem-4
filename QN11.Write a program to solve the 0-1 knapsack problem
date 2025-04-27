@@ -1,0 +1,53 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Function to solve the 0-1 Knapsack problem
+int knapsack(int W, const vector<int>& weights, const vector<int>& values, int n) {
+    // Create a 2D DP array, where dp[i][w] is the maximum value that can be achieved
+    // with a knapsack capacity of 'w' using the first 'i' items.
+    vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+
+    // Build the dp table
+    for (int i = 1; i <= n; ++i) {
+        for (int w = 1; w <= W; ++w) {
+            if (weights[i - 1] <= w) {
+                // Item can be included in the knapsack
+                dp[i][w] = max(dp[i - 1][w], values[i - 1] + dp[i - 1][w - weights[i - 1]]);
+            } else {
+                // Item cannot be included in the knapsack
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    // The answer will be in dp[n][W], the maximum value for 'n' items and knapsack capacity 'W'
+    return dp[n][W];
+}
+
+int main() {
+    // Example inputs: number of items, knapsack capacity, item weights and values
+    int W = 50;  // Knapsack capacity
+    vector<int> weights = {10, 20, 30};  // Weights of the items
+    vector<int> values = {60, 100, 120}; // Values of the items
+    int n = weights.size();  // Number of items
+
+    // Call knapsack function and print the result
+    cout << "Maximum value in Knapsack = " << knapsack(W, weights, values, n) << endl;
+
+    return 0;
+}
+
+
+OUTPUT:
+Maximum value in Knapsack = 220
+
+
+
+Time Complexity:
+>>Time Complexity: O(n * W), where n is the number of items and W is the knapsack's capacity.
+
+We fill a DP table of size (n+1) x (W+1) and each entry takes constant time to compute.
+
+>>Space Complexity: O(n * W), for the 2D DP array used to store the intermediate results.
