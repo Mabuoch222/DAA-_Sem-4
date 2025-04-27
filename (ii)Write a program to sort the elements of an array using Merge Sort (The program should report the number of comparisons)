@@ -1,0 +1,72 @@
+#include <iostream>
+using namespace std;
+
+void merge(int arr[], int temp[], int left, int right, int &comparisons) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+    merge(arr, temp, left, mid, comparisons);        // Left subarray
+    merge(arr, temp, mid + 1, right, comparisons);   // Right subarray
+
+    // Merge the two halves
+    int i = left, j = mid + 1, k = left;
+
+    while (i <= mid && j <= right) {
+        comparisons++;  // Increment comparison
+        if (arr[i] <= arr[j]) {
+            temp[k] = arr[i];
+            i++;
+        } else {
+            temp[k] = arr[j];
+            j++;
+        }
+        k++;
+    }
+
+    // Copy remaining elements from left subarray if any
+    while (i <= mid) {
+        temp[k] = arr[i];
+        i++;
+        k++;
+    }
+
+    // Copy remaining elements from right subarray if any
+    while (j <= right) {
+        temp[k] = arr[j];
+        j++;
+        k++;
+    }
+
+    // Copy merged subarray back to original array
+    for (int i = left; i <= right; i++) {
+        arr[i] = temp[i];
+    }
+}
+
+void mergeSort(int arr[], int temp[], int left, int right, int &comparisons) {
+    merge(arr, temp, left, right, comparisons);
+}
+
+int main() {
+    int arr[] = {12, 11, 13, 5, 6, 7};
+    int n = sizeof(arr) / sizeof(arr[0]);
+    int temp[n];
+    int comparisons = 0;
+
+    mergeSort(arr, temp, 0, n - 1, comparisons);
+
+    cout << "Sorted array: ";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+
+    cout << "Number of comparisons: " << comparisons << endl;
+
+    return 0;
+}
+
+
+OUTPUT:
+Sorted array: 5 6 7 11 12 13 
+Number of comparisons: 15
