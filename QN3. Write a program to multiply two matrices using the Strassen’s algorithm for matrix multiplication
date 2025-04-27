@@ -1,0 +1,179 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Function to add two matrices
+void addMatrix(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& result) {
+    int n = A.size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            result[i][j] = A[i][j] + B[i][j];
+        }
+    }
+}
+
+// Function to subtract two matrices
+void subtractMatrix(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& result) {
+    int n = A.size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            result[i][j] = A[i][j] - B[i][j];
+        }
+    }
+}
+
+// Function to perform Strassen's Matrix Multiplication
+void strassenMultiply(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& result) {
+    int n = A.size();
+    
+    // Base case for recursion: 1x1 matrix multiplication
+    if (n == 1) {
+        result[0][0] = A[0][0] * B[0][0];
+        return;
+    }
+
+    int newSize = n / 2;
+    
+    // Divide matrices into 4 submatrices
+    vector<vector<int>> A11(newSize, vector<int>(newSize));
+    vector<vector<int>> A12(newSize, vector<int>(newSize));
+    vector<vector<int>> A21(newSize, vector<int>(newSize));
+    vector<vector<int>> A22(newSize, vector<int>(newSize));
+
+    vector<vector<int>> B11(newSize, vector<int>(newSize));
+    vector<vector<int>> B12(newSize, vector<int>(newSize));
+    vector<vector<int>> B21(newSize, vector<int>(newSize));
+    vector<vector<int>> B22(newSize, vector<int>(newSize));
+
+    // Partition the matrices into submatrices
+    for (int i = 0; i < newSize; i++) {
+        for (int j = 0; j < newSize; j++) {
+            A11[i][j] = A[i][j];
+            A12[i][j] = A[i][j + newSize];
+            A21[i][j] = A[i + newSize][j];
+            A22[i][j] = A[i + newSize][j + newSize];
+
+            B11[i][j] = B[i][j];
+            B12[i][j] = B[i][j + newSize];
+            B21[i][j] = B[i + newSize][j];
+            B22[i][j] = B[i + newSize][j + newSize];
+        }
+    }
+
+    // Create intermediate matrices for Strassen's algorithm
+    vector<vector<int>> M1(newSize, vector<int>(newSize));
+    vector<vector<int>> M2(newSize, vector<int>(newSize));
+    vector<vector<int>> M3(newSize, vector<int>(newSize));
+    vector<vector<int>> M4(newSize, vector<int>(newSize));
+    vector<vector<int>> M5(newSize, vector<int>(newSize));
+    vector<vector<int>> M6(newSize, vector<int>(newSize));
+    vector<vector<int>> M7(newSize, vector<int>(newSize));
+
+    vector<vector<int>> AResult(newSize, vector<int>(newSize));
+    vector<vector<int>> BResult(newSize, vector<int>(newSize));
+
+    // M1 = (A11 + A22) * (B11 + B22)
+    addMatrix(A11, A22, AResult);
+    addMatrix(B11, B22, BResult);
+    strassenMultiply(AResult, BResult, M1);
+
+    // M2 = (A21 + A22) * B11
+    addMatrix(A21, A22, AResult);
+    strassenMultiply(AResult, B11, M2);
+
+    // M3 = A11 * (B12 - B22)
+    subtractMatrix(B12, B22, BResult);
+    strassenMultiply(A11, BResult, M3);
+
+    // M4 = A22 * (B21 - B11)
+    subtractMatrix(B21, B11, BResult);
+    strassenMultiply(A22, BResult, M4);
+
+    // M5 = (A11 + A12) * B22
+    addMatrix(A11, A12, AResult);
+    strassenMultiply(AResult, B22, M5);
+
+    // M6 = (A21 - A11) * (B11 + B12)
+    subtractMatrix(A21, A11, AResult);
+    addMatrix(B11, B12, BResult);
+    strassenMultiply(AResult, BResult, M6);
+
+    // M7 = (A12 - A22) * (B21 + B22)
+    subtractMatrix(A12, A22, AResult);
+    addMatrix(B21, B22, BResult);
+    strassenMultiply(AResult, BResult, M7);
+
+    // Now combine the 7 M's to get the final result matrix
+    vector<vector<int>> C11(newSize, vector<int>(newSize));
+    vector<vector<int>> C12(newSize, vector<int>(newSize));
+    vector<vector<int>> C21(newSize, vector<int>(newSize));
+    vector<vector<int>> C22(newSize, vector<int>(newSize));
+
+    // C11 = M1 + M4 - M5 + M7
+    addMatrix(M1, M4, AResult);
+    subtractMatrix(AResult, M5, AResult);
+    addMatrix(AResult, M7, C11);
+
+    // C12 = M3 + M5
+    addMatrix(M3, M5, C12);
+
+    // C21 = M2 + M4
+    addMatrix(M2, M4, C21);
+
+    // C22 = M1 - M2 + M3 + M6
+    addMatrix(M1, M2, AResult);
+    subtractMatrix(AResult, M3, AResult);
+    addMatrix(AResult, M6, C22);
+
+    // Combine the submatrices into the final result matrix
+    for (int i = 0; i < newSize; i++) {
+        for (int j = 0; j < newSize; j++) {
+            result[i][j] = C11[i][j];
+            result[i][j + newSize] = C12[i][j];
+            result[i + newSize][j] = C21[i][j];
+            result[i + newSize][j + newSize] = C22[i][j];
+        }
+    }
+}
+
+int main() {
+    // Example matrices for multiplication
+    vector<vector<int>> A = {
+        {1, 2, 3, 4},
+        {5, 6, 7, 8},
+        {9, 10, 11, 12},
+        {13, 14, 15, 16}
+    };
+
+    vector<vector<int>> B = {
+        {16, 15, 14, 13},
+        {12, 11, 10, 9},
+        {8, 7, 6, 5},
+        {4, 3, 2, 1}
+    };
+
+    int n = A.size();
+    vector<vector<int>> result(n, vector<int>(n));
+
+    strassenMultiply(A, B, result);
+
+    // Output the resulting matrix
+    cout << "Product of A and B (Strassen's Algorithm):\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << result[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    return 0;
+}
+
+
+
+OUTPUT:
+Product of A and B (Strassen's Algorithm):
+80 70 60 50 
+240 214 188 162 
+400 358 316 274 
+560 502 444 386
